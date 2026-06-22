@@ -95,6 +95,13 @@ jobs:
         uses: taiki-e/install-action@v2
         with:
           tool: wasm-bindgen-cli@${{ steps.wasm-bindgen-version.outputs.version }}
+      
+      - name: Install wasm-opt (Web)
+        if: matrix.os == 'web'
+        uses: sigoden/install-binary@v1
+        with:
+          repo: WebAssembly/binaryen
+          name: wasm-opt
 
       - name: Package Web Build
         if: matrix.os == 'web'
