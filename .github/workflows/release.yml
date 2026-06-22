@@ -99,7 +99,8 @@ jobs:
       - name: Package Web Build
         if: matrix.os == 'web'
         run: |
-          wasm-bindgen --target web --out-dir out --no-typescript target/wasm32-unknown-unknown/wasm-release/up-to-chance.wasm
+          wasm-opt -Os target/wasm32-unknown-unknown/wasm-release/up-to-chance.wasm -o target/wasm32-unknown-unknown/wasm-release/up-to-chance.opt.wasm
+          wasm-bindgen --target web --out-dir out --out-name up-to-chance --no-typescript target/wasm32-unknown-unknown/wasm-release/up-to-chance.opt.wasm
 
           # Write index.html
           cat << 'EOF' > out/index.html
