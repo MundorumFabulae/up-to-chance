@@ -9,6 +9,9 @@ on:
 permissions:
   contents: write
 
+env:
+  CARGO_FEATURE_PURE: "1"
+
 jobs:
   build-release:
     name: Build - ${{ matrix.archive_name }}
