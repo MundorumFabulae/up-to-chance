@@ -99,7 +99,7 @@ jobs:
       - name: Package Web Build
         if: matrix.os == 'web'
         run: |
-          wasm-bindgen --target web --out-dir out --no-typescript target/wasm32-unknown-unknown/wasm-release/up_to_chance.wasm
+          wasm-bindgen --target web --out-dir out --no-typescript target/wasm32-unknown-unknown/wasm-release/up-to-chance.wasm
 
           # Write index.html
           cat << 'EOF' > out/index.html
@@ -126,7 +126,7 @@ jobs:
           </head>
           <body>
               <script type="module">
-                  import init from './up_to_chance.js';
+                  import init from './up-to-chance.js';
                   init().catch((error) => {
                       if (!error.message.startsWith("Using exceptions for control flow,")) {
                           throw error;
