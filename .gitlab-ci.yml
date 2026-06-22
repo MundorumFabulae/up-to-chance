@@ -1,0 +1,73 @@
+workflow:
+  auto_cancel:
+    on_new_commit: interruptible
+  rules:
+    # 1. Trigger for merge requests when Rust-related files change
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - "**/*.rs"
+        - Cargo.toml
+    # 2. Prevent a second (duplicate) branch pipeline if a merge request is open
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+      when: never
+    # 3. Trigger for standard branch pushes (e.g., main or feature branch prior to an MR)
+    - if: $CI_COMMIT_BRANCH
+      changes:
+        - "**/*.rs"
+        - Cargo.toml
+
+default:
+  image: rust:latest
+  interruptible: true
+
+stages:
+  - lint
+  - build
+
+# --- Caching --------------------------------------------------------------- #
+
+.cargo-cache:
+  variables:
+    CARGO_HOME: $CI_PROJECT_DIR/.cargo
+  cache:
+    key: "rust-cache-${CI_COMMIT_REF_SLUG}"
+    paths:
+      - .cargo/bin/
+      - .cargo/registry/index/
+      - .cargo/registry/cache/
+      - .cargo/git/db/
+      - target/
+
+# --- System dependencies --------------------------------------------------- #
+
+.install-system-deps:
+  before_script:
+    - apt-get update
+    - apt-get install -y pkg-config libx11-dev libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev
+    - rustup show
+
+# --- Jobs ------------------------------------------------------------------ #
+
+fmt:
+  stage: lint
+  extends: .cargo-cache
+  script:
+    - rustup toolchain install nightly --component rustfmt
+    - cargo +nightly fmt --check
+
+clippy:
+  stage: lint
+  extends:
+    - .cargo-cache
+    - .install-system-deps
+  script:
+    - rustup component add clippy
+    - cargo clippy --workspace --all-targets -- -D warnings
+
+build:
+  stage: build
+  extends:
+    - .cargo-cache
+    - .install-system-deps
+  script:
+    - cargo build --workspace --all-targets --profile build-check

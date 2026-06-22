@@ -1,0 +1,48 @@
+# Common settings that generally should always be used with your language specific settings
+
+# Auto detect text files and perform LF normalization
+*          text=auto
+
+*.md       text diff=markdown
+*.mdx      text diff=markdown
+
+# Git LFS custom attribute
+[attr]lfs -text filter=lfs diff=lfs merge=lfs
+
+# Graphics
+*.png      lfs
+*.jpg      lfs
+*.jpeg     lfs
+*.gif      lfs
+*.tif      lfs
+*.tiff     lfs
+*.ico      lfs
+*.svg      text
+*.eps      lfs
+
+# Audio and video assets
+*.wav      lfs
+*.mp3      lfs
+*.ogg      lfs
+*.m4a      lfs
+*.mp4      lfs
+*.webm     lfs
+
+# Serialisation
+*.json     text
+*.toml     text
+*.xml      text
+*.yaml     text
+*.yml      text
+
+#
+# Exclude files from exporting
+#
+
+.gitattributes export-ignore
+.gitignore     export-ignore
+.gitkeep       export-ignore
+
+*.rs       text diff=rust
+*.toml     text diff=toml
+Cargo.lock text

@@ -1,0 +1,19 @@
+edition = "2024"
+unstable_features = true
+
+hard_tabs = false
+tab_spaces = 4
+
+combine_control_expr = false
+fn_params_layout = "Vertical"
+force_multiline_blocks = true
+format_code_in_doc_comments = true
+hex_literal_case = "Upper"
+imports_layout = "Vertical"
+imports_granularity = "Crate"
+newline_style = "Native"
+reorder_imports = true
+group_imports = "StdExternalCrate"
+reorder_modules = true
+use_try_shorthand = true
+wrap_comments = true

@@ -1,0 +1,254 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'          # Triggers on tags like v1.0.0
+      - '!v*-open'    # Excludes tags ending with -open (e.g., v1.0.0-open)
+
+permissions:
+  contents: write
+
+jobs:
+  build-release:
+    name: Build - ${{ matrix.archive_name }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
+          - target: x86_64-pc-windows-msvc
+            runner: blacksmith-4vcpu-windows-2025
+            os: windows
+            archive_name: up-to-chance-windows-x64.zip
+          - target: aarch64-pc-windows-msvc
+            runner: blacksmith-4vcpu-windows-2025
+            os: windows
+            archive_name: up-to-chance-windows-arm64.zip
+          - target: x86_64-unknown-linux-gnu
+            runner: blacksmith-4vcpu-ubuntu-2404
+            os: linux
+            archive_name: up-to-chance-linux-x64.tar.gz
+          - target: aarch64-unknown-linux-gnu
+            runner: blacksmith-4vcpu-ubuntu-2404-arm
+            os: linux
+            archive_name: up-to-chance-linux-arm64.tar.gz
+          - target: wasm32-unknown-unknown
+            runner: blacksmith-4vcpu-ubuntu-2404-arm
+            os: web
+            archive_name: up-to-chance-web.zip
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install system dependencies (Linux)
+        if: matrix.os == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pkg-config libx11-dev libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev
+
+      - name: Install zip (Web)
+        if: matrix.os == 'web'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y zip
+
+      - name: Install Rust (Windows)
+        if: matrix.os == 'windows'
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+          target: "x86_64-pc-windows-msvc,aarch64-pc-windows-msvc"
+          cache-key: ${{ matrix.target }}
+
+      - name: Install Rust (Non-Windows)
+        if: matrix.os != 'windows'
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+          target: ${{ matrix.target }}
+          cache-key: ${{ matrix.target }}
+
+      - name: Build target (desktop)
+        if: matrix.os != 'web'
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Build target (web)
+        if: matrix.os == 'web'
+        run: cargo build --profile wasm-release --target ${{ matrix.target }}
+
+      # Dynamically query the exact version of wasm-bindgen used in Cargo.lock
+      # to guarantee matches and prevent browser runtime exceptions.
+      - name: Get wasm-bindgen version (Web)
+        if: matrix.os == 'web'
+        id: wasm-bindgen-version
+        shell: bash
+        run: |
+          VERSION=$(cargo metadata --format-version 1 | jq -r '.packages[] | select(.name == "wasm-bindgen") | .version' | head -n 1)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Install wasm-bindgen-cli (Web)
+        if: matrix.os == 'web'
+        uses: jetli/wasm-bindgen-action@v0.2.0
+        with:
+          version: ${{ steps.wasm-bindgen-version.outputs.version }}
+
+      - name: Package Web Build
+        if: matrix.os == 'web'
+        run: |
+          wasm-bindgen --target web --out-dir out --no-typescript target/wasm32-unknown-unknown/wasm-release/up_to_chance.wasm
+
+          # Write index.html
+          cat << 'EOF' > out/index.html
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="utf-8">
+              <title>Up To Chance</title>
+              <style>
+                  body {
+                      margin: 0;
+                      background-color: #000;
+                      overflow: hidden;
+                      display: flex;
+                      justify-content: center;
+                      align-items: center;
+                      height: 100vh;
+                      width: 100vw;
+                  }
+                  canvas {
+                      background-color: #000;
+                  }
+              </style>
+          </head>
+          <body>
+              <script type="module">
+                  import init from './up_to_chance.js';
+                  init().catch((error) => {
+                      if (!error.message.startsWith("Using exceptions for control flow,")) {
+                          throw error;
+                      }
+                  });
+              </script>
+          </body>
+          </html>
+          EOF
+
+          cp LICENSE.md README.md out/
+          if [ -d "assets" ]; then
+            cp -r assets out/
+          fi
+
+          cd out
+          zip -r ../${{ matrix.archive_name }} .
+          cd ..
+
+      - name: Package Windows Build
+        if: matrix.os == 'windows'
+        shell: pwsh
+        run: |
+          $stageDir = "up-to-chance-${{ matrix.target }}"
+          New-Item -ItemType Directory -Force -Path $stageDir
+          Copy-Item "LICENSE.md", "README.md" -Destination $stageDir
+          Copy-Item "target/${{ matrix.target }}/release/up-to-chance.exe" -Destination $stageDir
+          if (Test-Path "assets") {
+              Copy-Item -Recurse "assets" -Destination $stageDir
+          }
+          Compress-Archive -Path "$stageDir" -DestinationPath "${{ matrix.archive_name }}"
+
+      - name: Package Linux Build
+        if: matrix.os == 'linux'
+        run: |
+          mkdir -p "up-to-chance-${{ matrix.target }}"
+          cp LICENSE.md README.md "target/${{ matrix.target }}/release/up-to-chance" "up-to-chance-${{ matrix.target }}/"
+          if [ -d "assets" ]; then
+            cp -r assets "up-to-chance-${{ matrix.target }}/"
+          fi
+          tar -czf "${{ matrix.archive_name }}" "up-to-chance-${{ matrix.target }}"
+
+      # Upload completed archives as workflow run artifacts
+      - name: Upload temporary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ matrix.archive_name }}
+          path: ${{ matrix.archive_name }}
+
+  publish-releases:
+    name: Publish Releases (GitHub & GitLab)
+    needs: build-release
+    runs-on: blacksmith-2vcpu-ubuntu-2404-arm
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Downloads all files directly into the "artifacts" directory
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: release-*
+          path: artifacts
+          merge-multiple: true
+
+      # 1. Create GitHub Release and Upload Assets
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # 2. Upload Assets to GitLab Generic Package Registry
+      - name: Upload to GitLab Registry
+        run: |
+          PROJECT_ID="${{ secrets.GITLAB_PROJECT_ID }}"
+          TAG="${{ github.ref_name }}"
+          
+          # List of files we expect from the builds
+          ARCHIVES=(
+            "up-to-chance-windows-x64.zip"
+            "up-to-chance-windows-arm64.zip"
+            "up-to-chance-linux-x64.tar.gz"
+            "up-to-chance-linux-arm64.tar.gz"
+            "up-to-chance-web.zip"
+          )
+          
+          for ARCHIVE in "${ARCHIVES[@]}"; do
+            echo "Uploading $ARCHIVE to GitLab..."
+            curl --fail-with-body --request PUT \
+              --header "PRIVATE-TOKEN: ${{ secrets.GITLAB_TOKEN }}" \
+              --upload-file "artifacts/$ARCHIVE" \
+              "https://gitlab.com/api/v4/projects/${PROJECT_ID}/packages/generic/up-to-chance/${TAG}/${ARCHIVE}"
+          done
+
+      # 3. Create GitLab Release and link the Generic Package assets
+      - name: Create GitLab Release
+        run: |
+          PROJECT_ID="${{ secrets.GITLAB_PROJECT_ID }}"
+          TAG="${{ github.ref_name }}"
+          BASE_URL="https://gitlab.com/api/v4/projects/${PROJECT_ID}/packages/generic/up-to-chance/${TAG}"
+
+          # Safely construct the JSON payload with links to the package registry using jq
+          PAYLOAD=$(jq -n \
+            --arg tag "$TAG" \
+            --arg base_url "$BASE_URL" \
+            '{
+              name: ("Release " + $tag),
+              tag_name: $tag,
+              description: ("Automated release of Up To Chance version " + $tag),
+              assets: {
+                links: [
+                  { name: "up-to-chance-windows-x64.zip", url: ($base_url + "/up-to-chance-windows-x64.zip") },
+                  { name: "up-to-chance-windows-arm64.zip", url: ($base_url + "/up-to-chance-windows-arm64.zip") },
+                  { name: "up-to-chance-linux-x64.tar.gz", url: ($base_url + "/up-to-chance-linux-x64.tar.gz") },
+                  { name: "up-to-chance-linux-arm64.tar.gz", url: ($base_url + "/up-to-chance-linux-arm64.tar.gz") },
+                  { name: "up-to-chance-web.zip", url: ($base_url + "/up-to-chance-web.zip") }
+                ]
+              }
+            }')
+
+          curl --fail-with-body --request POST \
+            --header "PRIVATE-TOKEN: ${{ secrets.GITLAB_TOKEN }}" \
+            --header "Content-Type: application/json" \
+            --data "$PAYLOAD" \
+            "https://gitlab.com/api/v4/projects/${PROJECT_ID}/releases"

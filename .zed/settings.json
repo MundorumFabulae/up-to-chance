@@ -1,0 +1,21 @@
+{
+  "lsp": {
+    "rust-analyzer": {
+      "initialization_options": {
+        "lru": {
+          "capacity": 32,
+        },
+        "check": {
+          "allTargets": false,
+        },
+        "cargo": {
+          "allTargets": false,
+          "features": ["dev"],
+        },
+        "rustfmt": {
+          "extraArgs": ["+nightly"],
+        },
+      },
+    },
+  },
+}
