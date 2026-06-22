@@ -42,7 +42,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install system dependencies (Linux)
         if: matrix.os == 'linux'
@@ -171,7 +171,7 @@ jobs:
 
       # Upload completed archives as workflow run artifacts
       - name: Upload temporary artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: release-${{ matrix.archive_name }}
           path: ${{ matrix.archive_name }}
@@ -182,11 +182,11 @@ jobs:
     runs-on: blacksmith-2vcpu-ubuntu-2404-arm
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # Downloads all files directly into the "artifacts" directory
       - name: Download all build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: release-*
           path: artifacts
@@ -194,7 +194,7 @@ jobs:
 
       # 1. Create GitHub Release and Upload Assets
       - name: Publish GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: artifacts/*
           generate_release_notes: true
