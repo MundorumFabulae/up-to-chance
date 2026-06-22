@@ -92,9 +92,9 @@ jobs:
 
       - name: Install wasm-bindgen-cli (Web)
         if: matrix.os == 'web'
-        uses: jetli/wasm-bindgen-action@v0.2.0
+        uses: taiki-e/install-action@v2
         with:
-          version: ${{ steps.wasm-bindgen-version.outputs.version }}
+          tool: wasm-bindgen-cli@${{ steps.wasm-bindgen-version.outputs.version }}
 
       - name: Package Web Build
         if: matrix.os == 'web'
