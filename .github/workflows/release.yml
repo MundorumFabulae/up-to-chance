@@ -23,10 +23,12 @@ jobs:
             runner: blacksmith-4vcpu-windows-2025
             os: windows
             archive_name: up-to-chance-windows-x64.zip
+            msvc_arch: amd64
           - target: aarch64-pc-windows-msvc
             runner: blacksmith-4vcpu-windows-2025
             os: windows
             archive_name: up-to-chance-windows-arm64.zip
+            msvc_arch: amd64_arm64
           - target: x86_64-unknown-linux-gnu
             runner: blacksmith-4vcpu-ubuntu-2404
             os: linux
@@ -56,16 +58,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y zip
 
-      - name: Install Rust (Windows)
+      - name: Configure MSVC Development Environment (Windows)
         if: matrix.os == 'windows'
-        uses: actions-rust-lang/setup-rust-toolchain@v1
+        uses: ilammy/msvc-dev-cmd@v1
         with:
-          toolchain: stable
-          target: "x86_64-pc-windows-msvc,aarch64-pc-windows-msvc"
-          cache-key: ${{ matrix.target }}
+          arch: ${{ matrix.msvc_arch }}
 
-      - name: Install Rust (Non-Windows)
-        if: matrix.os != 'windows'
+      - name: Install Rust
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: stable
