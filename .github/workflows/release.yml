@@ -3,8 +3,8 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'          # Triggers on tags like v1.0.0
-      - '!v*-open'    # Excludes tags ending with -open (e.g., v1.0.0-open)
+      - "v*" # Triggers on tags like v1.0.0
+      - "!v*-open" # Excludes tags ending with -open (e.g., v1.0.0-open)
 
 permissions:
   contents: write
@@ -58,6 +58,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y zip
 
+      - name: Install MSVC ARM64 build tools
+        if: matrix.target == 'aarch64-pc-windows-msvc'
+        run: |
+          Start-Process -Wait -NoNewWindow -FilePath "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_buildtools.exe" -ArgumentList "modify","--installPath","C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools","--add","Microsoft.VisualStudio.Component.VC.Tools.ARM64","--quiet","--norestart","--force"
+
       - name: Configure MSVC Development Environment (Windows)
         if: matrix.os == 'windows'
         uses: ilammy/msvc-dev-cmd@v1
@@ -94,7 +99,7 @@ jobs:
         uses: taiki-e/install-action@v2
         with:
           tool: wasm-bindgen-cli@${{ steps.wasm-bindgen-version.outputs.version }}
-      
+
       - name: Install wasm-opt (Web)
         if: matrix.os == 'web'
         uses: sigoden/install-binary@v1
@@ -213,7 +218,7 @@ jobs:
         run: |
           PROJECT_ID="${{ secrets.GITLAB_PROJECT_ID }}"
           TAG="${{ github.ref_name }}"
-          
+
           # List of files we expect from the builds
           ARCHIVES=(
             "up-to-chance-windows-x64.zip"
@@ -222,7 +227,7 @@ jobs:
             "up-to-chance-linux-arm64.tar.gz"
             "up-to-chance-web.zip"
           )
-          
+
           for ARCHIVE in "${ARCHIVES[@]}"; do
             echo "Uploading $ARCHIVE to GitLab..."
             curl --fail-with-body --request PUT \
