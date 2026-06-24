@@ -30,6 +30,7 @@ version = "0.19"
 default-features = false
 features = [
     "async_executor",
+    "basis-universal",
     "bevy_animation",
     "bevy_anti_alias",
     "bevy_asset",
@@ -62,7 +63,6 @@ features = [
     "bevy_window",
     "bevy_winit",
     "critical-section",
-    "dds",
     "multi_threaded",
     "ktx2",
     "reflect_auto_register",
@@ -70,6 +70,7 @@ features = [
     "symphonia-flac",
     "sysinfo_plugin",
     "ui_picking",
+    "zlib",
     "zstd_rust"
 ]
 

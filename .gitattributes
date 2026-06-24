@@ -19,6 +19,7 @@
 *.ico      lfs
 *.svg      text
 *.eps      lfs
+*.ktx2     lfs
 
 # Audio and video assets
 *.wav      lfs

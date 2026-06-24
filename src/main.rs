@@ -1,8 +1,13 @@
 use std::process::ExitCode;
 
-use avian2d::PhysicsPlugins;
+#[cfg(feature = "dev-full")]
+use avian2d::debug_render::PhysicsDebugPlugin;
 #[cfg(feature = "dev")]
 use avian2d::diagnostics::PhysicsDiagnosticsPlugin;
+use avian2d::{
+    PhysicsPlugins,
+    dynamics::integrator::Gravity,
+};
 use bevy::{
     DefaultPlugins,
     app::{
@@ -64,10 +69,14 @@ fn main() -> ExitCode {
             }),
     );
 
-    app.add_plugins(PhysicsPlugins::default());
+    app.add_plugins(PhysicsPlugins::default())
+        .insert_resource(Gravity::ZERO);
 
     #[cfg(feature = "dev")]
     app.add_plugins(PhysicsDiagnosticsPlugin);
+
+    #[cfg(feature = "dev-full")]
+    app.add_plugins(PhysicsDebugPlugin);
 
     app.add_plugins(UpToChancePlugins);
 
