@@ -1,11 +1,11 @@
 {
-    "rust-analyzer.lru.capacity": 32,
-    "rust-analyzer.check.allTargets": false,
-    "rust-analyzer.cargo.allTargets": false,
-    "rust-analyzer.cargo.features": ["dev"],
-    "rust-analyzer.rustfmt.extraArgs": ["+nightly"],
+  "rust-analyzer.lru.capacity": 32,
+  "rust-analyzer.check.allTargets": false,
+  "rust-analyzer.cargo.allTargets": false,
+  "rust-analyzer.cargo.features": ["dev-full"],
+  "rust-analyzer.rustfmt.extraArgs": ["+nightly"],
 
-    "[rust]":{
-        "editor.formatOnSave": true
-    }
+  "[rust]": {
+    "editor.formatOnSave": true,
+  },
 }

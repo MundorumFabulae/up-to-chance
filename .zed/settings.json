@@ -10,7 +10,7 @@
         },
         "cargo": {
           "allTargets": false,
-          "features": ["dev"],
+          "features": ["dev-full"],
         },
         "rustfmt": {
           "extraArgs": ["+nightly"],
