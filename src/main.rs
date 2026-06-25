@@ -7,6 +7,7 @@ use avian2d::diagnostics::PhysicsDiagnosticsPlugin;
 use avian2d::{
     PhysicsPlugins,
     dynamics::integrator::Gravity,
+    physics_transform::PhysicsTransformConfig,
 };
 use bevy::{
     DefaultPlugins,
@@ -70,7 +71,12 @@ fn main() -> ExitCode {
     );
 
     app.add_plugins(PhysicsPlugins::default())
-        .insert_resource(Gravity::ZERO);
+        .insert_resource(Gravity::ZERO)
+        .insert_resource(PhysicsTransformConfig {
+            transform_to_position: false,
+            position_to_transform: false,
+            ..Default::default()
+        });
 
     #[cfg(feature = "dev")]
     app.add_plugins(PhysicsDiagnosticsPlugin);

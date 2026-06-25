@@ -1,4 +1,5 @@
 pub mod scene;
+pub mod visuals;
 
 use bevy::{
     app::plugin_group,
@@ -15,10 +16,14 @@ use bevy::{
     scene::CommandsSceneExt,
 };
 
-use crate::scene::sample_scene;
+use crate::{
+    scene::sample_scene,
+    visuals::UpToChanceVisualsPlugin,
+};
 
 plugin_group! {
     pub struct UpToChancePlugins {
+        :UpToChanceVisualsPlugin,
     }
 }
 
