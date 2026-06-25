@@ -1,3 +1,4 @@
+pub mod input;
 pub mod scene;
 pub mod visuals;
 
@@ -17,12 +18,14 @@ use bevy::{
 };
 
 use crate::{
+    input::UpToChanceInputPlugin,
     scene::sample_scene,
     visuals::UpToChanceVisualsPlugin,
 };
 
 plugin_group! {
     pub struct UpToChancePlugins {
+        :UpToChanceInputPlugin,
         :UpToChanceVisualsPlugin,
     }
 }

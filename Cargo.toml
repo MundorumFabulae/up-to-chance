@@ -23,6 +23,7 @@ dev-full = [
 
 [dependencies]
 avian2d = { version = "0.7" }
+bevy_enhanced_input = { version = "0.26" }
 toml = { version = "1.1.0" }
 
 [dependencies.bevy]
