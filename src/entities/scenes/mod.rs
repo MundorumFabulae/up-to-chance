@@ -22,25 +22,23 @@ use crate::{
     visuals::IsometricSprite,
 };
 
-#[derive(SceneComponent, Clone)]
-pub struct PlayerComponent {
+#[derive(SceneComponent, Default, Clone)]
+#[scene(PlayerProps)]
+pub struct PlayerComponent;
+
+#[derive(Default)]
+pub struct PlayerProps {
     pub speed: f32,
 }
 
-impl Default for PlayerComponent {
-    fn default() -> Self {
-        Self { speed: 2.5 }
-    }
-}
-
 impl PlayerComponent {
-    fn scene() -> impl Scene {
+    fn scene(props: PlayerProps) -> impl Scene {
         let player_collider = Collider::circle(32.0);
 
         bsn! {
             #Player
-            EntityMovement {
-                speed: 2.5
+            @EntityMovement {
+                @speed: { props.speed }
             }
             PlayerActions
             IsometricSprite

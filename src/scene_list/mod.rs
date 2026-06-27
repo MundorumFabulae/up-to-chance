@@ -39,7 +39,12 @@ pub struct AssociatedScreen(pub Screens);
 
 pub fn sample_screen() -> impl SceneList {
     bsn_list![
-        (@PlayerComponent AssociatedScreen(Screens::SampleScreen))
+        (
+            @PlayerComponent {
+                @speed: 2.5
+            }
+            AssociatedScreen(Screens::SampleScreen)
+        )
     ]
 }
 

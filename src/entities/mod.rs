@@ -5,19 +5,37 @@ use bevy::{
         FixedUpdate,
         Plugin,
     },
-    ecs::{
-        component::Component,
-        system::Query,
-    },
+    ecs::system::Query,
     math::Vec2,
+    scene::{
+        Scene,
+        SceneComponent,
+        bsn,
+    },
 };
 
 pub mod scenes;
 
-#[derive(Component, Default, Clone)]
+#[derive(SceneComponent, Default, Clone)]
+#[scene(EntityMovementProps)]
 pub struct EntityMovement {
     pub direction: Vec2,
     pub speed: f32,
+}
+
+#[derive(Default)]
+pub struct EntityMovementProps {
+    pub speed: f32,
+}
+
+impl EntityMovement {
+    fn scene(props: EntityMovementProps) -> impl Scene {
+        bsn! {
+            EntityMovement {
+                speed: { props.speed }
+            }
+        }
+    }
 }
 
 fn handle_entity_movement(entities: Query<(&mut LinearVelocity, &EntityMovement)>) {
