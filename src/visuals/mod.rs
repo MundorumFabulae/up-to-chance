@@ -34,7 +34,7 @@ fn sync_isometric_sprite(mut sprites: Query<(&Position, &mut Transform), With<Is
         transform.translation.x = iso_x;
         transform.translation.y = iso_y;
 
-        transform.translation.z = -pos_y / 64.0;
+        transform.translation.z = pos_x + pos_y;
     }
 }
 
