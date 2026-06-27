@@ -15,7 +15,6 @@ use bevy::{
         CommandsSceneExt,
         SceneList,
         bsn_list,
-        template_value,
     },
     state::{
         app::AppExtStates,

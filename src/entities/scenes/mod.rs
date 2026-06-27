@@ -16,7 +16,11 @@ use bevy::{
     sprite::Sprite,
 };
 
-use crate::visuals::IsometricSprite;
+use crate::{
+    entities::EntityMovement,
+    input::PlayerActions,
+    visuals::IsometricSprite,
+};
 
 #[derive(SceneComponent, Clone)]
 pub struct PlayerComponent {
@@ -35,6 +39,10 @@ impl PlayerComponent {
 
         bsn! {
             #Player
+            EntityMovement {
+                speed: 2.5
+            }
+            PlayerActions
             IsometricSprite
             Sprite {
                 image: "sprites/spr_square.ktx2",

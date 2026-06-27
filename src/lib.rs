@@ -18,6 +18,7 @@ use bevy::{
 };
 
 use crate::{
+    entities::UpToChanceEntityPlugin,
     input::UpToChanceInputPlugin,
     scene_list::UpToChanceSceneManagementPlugin,
     visuals::UpToChanceVisualsPlugin,
@@ -25,6 +26,7 @@ use crate::{
 
 plugin_group! {
     pub struct UpToChancePlugins {
+        :UpToChanceEntityPlugin,
         :UpToChanceInputPlugin,
         :UpToChanceVisualsPlugin,
         :UpToChanceSceneManagementPlugin,

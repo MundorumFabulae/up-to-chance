@@ -38,6 +38,7 @@ use bevy::{
         WindowResizeConstraints,
     },
 };
+use bevy_enhanced_input::EnhancedInputPlugin;
 use up_to_chance::UpToChancePlugins;
 
 fn main() -> ExitCode {
@@ -83,6 +84,8 @@ fn main() -> ExitCode {
 
     #[cfg(feature = "dev-full")]
     app.add_plugins(PhysicsDebugPlugin);
+
+    app.add_plugins(EnhancedInputPlugin);
 
     app.add_plugins(UpToChancePlugins);
 
