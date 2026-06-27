@@ -95,11 +95,17 @@ fn handle_player_movement(
     movement: Res<PlayerMovement>,
 ) {
     let direction = movement.0;
-    player.direction = if direction.length() < 1.0 {
+    let normalized_direction = if direction.length() < 1.0 {
         direction
     } else {
         direction.normalize_or_zero()
-    }
+    };
+
+    let scaled_screen_direction = Vec2::new(normalized_direction.x, normalized_direction.y * 2.0);
+    let rotation = Vec2::from_angle(-std::f32::consts::FRAC_PI_4);
+    let world_direction = rotation.rotate(scaled_screen_direction);
+
+    player.direction = world_direction;
 }
 
 impl Plugin for UpToChanceInputPlugin {
