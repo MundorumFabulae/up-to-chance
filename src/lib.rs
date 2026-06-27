@@ -1,5 +1,6 @@
+pub mod entities;
 pub mod input;
-pub mod scene;
+pub mod scene_list;
 pub mod visuals;
 
 use bevy::{
@@ -14,12 +15,11 @@ use bevy::{
     },
     color::Color,
     ecs::system::Commands,
-    scene::CommandsSceneExt,
 };
 
 use crate::{
     input::UpToChanceInputPlugin,
-    scene::sample_scene,
+    scene_list::UpToChanceSceneManagementPlugin,
     visuals::UpToChanceVisualsPlugin,
 };
 
@@ -27,6 +27,7 @@ plugin_group! {
     pub struct UpToChancePlugins {
         :UpToChanceInputPlugin,
         :UpToChanceVisualsPlugin,
+        :UpToChanceSceneManagementPlugin,
     }
 }
 
@@ -45,5 +46,4 @@ pub fn setup(mut commands: Commands) {
         }),
         Camera2d,
     ));
-    commands.spawn_scene(sample_scene());
 }
